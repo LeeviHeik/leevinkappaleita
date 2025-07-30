@@ -115,6 +115,6 @@ voteBtn.addEventListener("click", async () => {
     voteCountEl.textContent = data.count + 1;
     alert("Painoit nappia! Kiitos hyvästä teosta!");
   } else {
-    alert("Eipäs nyt enempää painella!");
+    alert("Eipäs nyt enempää painella! Saatanan kusipää!");
   }
 });

@@ -39,7 +39,7 @@ googleSignInBtn.addEventListener("click", async () => {
     const userRef = doc(db, "users", user.uid);
     const userSnap = await getDoc(userRef);
 
-    if (!userSnap.exists()) {
+    if (!userSnap.exists() || !userSnap.data().username) {
       // --- TÄHÄN LISÄTÄÄN KÄYTTÄJÄNIMEN KYSYMINEN JA TALLENNUS ---
       let username = prompt("Anna käyttäjänimesi:");
 const usernameRegex = /^[A-Za-z]+$/;
@@ -58,11 +58,11 @@ if (!username || !usernameRegex.test(username)) {
 
 
       await setDoc(userRef, {
-        email: user.email,
-        displayName: user.displayName || null,
-        username: username,
-        createdAt: new Date()
-      });
+  email: user.email,
+  displayName: user.displayName || null,
+  username: username,
+  createdAt: new Date()
+}, { merge: true });
     }
 
     alert("Kirjautunut Googlella: " + (user.displayName || user.email));

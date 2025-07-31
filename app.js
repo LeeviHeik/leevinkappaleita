@@ -23,6 +23,7 @@ const db = getFirestore(app);
 const googleSignInBtn = document.getElementById("google-signin");
 const emailInput = document.getElementById("email");
 const passwordInput = document.getElementById("password");
+const usernameInput = document.getElementById("username");
 const emailSignInBtn = document.getElementById("email-signin");
 const emailRegisterBtn = document.getElementById("email-register");
 const voteBtn = document.getElementById("vote-btn");
@@ -39,9 +40,27 @@ googleSignInBtn.addEventListener("click", async () => {
     const userSnap = await getDoc(userRef);
 
     if (!userSnap.exists()) {
+      // --- TÄHÄN LISÄTÄÄN KÄYTTÄJÄNIMEN KYSYMINEN JA TALLENNUS ---
+      let username = prompt("Anna käyttäjänimesi:");
+const usernameRegex = /^[A-Za-z]+$/;
+
+if (!username || !usernameRegex.test(username)) {
+  // Poistetaan kaikki ei-aakkoset displayNamesta, jos mahdollista
+  username = (user.displayName?.replace(/[^A-Za-z]/g, "") || "Kayttaja" + Math.floor(Math.random() * 1000));
+  
+  // Varmistetaan ettei tyhjä jää
+  if (username.length === 0) {
+    username = "Kayttaja" + Math.floor(Math.random() * 1000);
+  }
+} else {
+  username = username.trim();
+}
+
+
       await setDoc(userRef, {
         email: user.email,
         displayName: user.displayName || null,
+        username: username,
         createdAt: new Date()
       });
     }
@@ -58,19 +77,31 @@ emailRegisterBtn.addEventListener("click", () => {
   const password = passwordInput.value;
 
   createUserWithEmailAndPassword(auth, email, password)
-    .then(async userCredential => {
-      const user = userCredential.user;
+  .then(async userCredential => {
+    const user = userCredential.user;
+    const username = usernameInput.value.trim();
+const usernameRegex = /^[A-Za-z]+$/;
 
-      await setDoc(doc(db, "users", user.uid), {
-        email: user.email,
-        createdAt: new Date()
-      });
+if (!username) {
+  alert("Anna käyttäjänimi.");
+  return;
+}
 
-      alert("Rekisteröityminen onnistui: " + user.email);
-    })
-    .catch(error => {
-      alert("Rekisteröitymisvirhe: " + error.message);
+if (!usernameRegex.test(username)) {
+  alert("Käyttäjänimi saa sisältää vain isoja ja pieniä kirjaimia (A-Z, a-z).");
+  return;
+}
+
+    // Tallennetaan käyttäjän sähköposti ja käyttäjänimi Firestoreen
+    await setDoc(doc(db, "users", user.uid), {
+      email: user.email,
+      username: username,
+      createdAt: new Date()
     });
+
+    alert("Rekisteröityminen onnistui: " + user.email + " Käyttäjänimi: " + username);
+  })
+
 });
 
 // Sähköpostilla kirjautuminen

@@ -29,15 +29,27 @@ const voteBtn = document.getElementById("vote-btn");
 const voteCountEl = document.getElementById("vote-count");
 
 // Google-kirjautuminen
-googleSignInBtn.addEventListener("click", () => {
-  signInWithPopup(auth, provider)
-    .then(result => {
-      const user = result.user;
-      alert("Kirjautunut Googlella: " + user.displayName);
-    })
-    .catch(error => {
-      alert("Google-kirjautumisvirhe: " + error.message);
-    });
+googleSignInBtn.addEventListener("click", async () => {
+  try {
+    const result = await signInWithPopup(auth, provider);
+    const user = result.user;
+
+    // Tarkistetaan, onko käyttäjä jo Firestoressa
+    const userRef = doc(db, "users", user.uid);
+    const userSnap = await getDoc(userRef);
+
+    if (!userSnap.exists()) {
+      await setDoc(userRef, {
+        email: user.email,
+        displayName: user.displayName || null,
+        createdAt: new Date()
+      });
+    }
+
+    alert("Kirjautunut Googlella: " + (user.displayName || user.email));
+  } catch (error) {
+    alert("Google-kirjautumisvirhe: " + error.message);
+  }
 });
 
 // Sähköpostilla rekisteröityminen

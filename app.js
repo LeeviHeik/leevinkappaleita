@@ -120,22 +120,46 @@ emailSignInBtn.addEventListener("click", () => {
 
 // Kirjautumistilan kuuntelu (UI:n päivitykseen)
 onAuthStateChanged(auth, async user => {
+  const userListDiv = document.getElementById("user-list");
+
   if (user) {
     console.log("Käyttäjä kirjautunut:", user.displayName || user.email);
     voteBtn.style.display = "inline-block";
 
     const docRef = doc(db, "votes", "main");
     const docSnap = await getDoc(docRef);
+
     if (docSnap.exists()) {
       voteCountEl.textContent = docSnap.data().count || 0;
+      await showUserList();
     } else {
       await setDoc(docRef, { count: 0, users: [] });
       voteCountEl.textContent = "0";
     }
+
+    // Käyttäjänimien listaus
+    const votesData = docSnap.data();
+    const users = votesData.users || [];
+    const usernames = [];
+
+    for (const u of users) {
+      const userDoc = await getDoc(doc(db, "users", u.uid));
+      if (userDoc.exists()) {
+        const data = userDoc.data();
+        if (data.username) usernames.push(data.username);
+      }
+    }
+
+    // Päivitä lista DOM:iin
+    userListDiv.innerHTML = "<h3>Käyttäjät jotka ovat painaneet nappia:</h3><ul>" +
+      usernames.map(name => `<li>${name}</li>`).join("") +
+      "</ul>";
+
   } else {
     console.log("Ei kirjautunutta käyttäjää");
     voteBtn.style.display = "none";
     voteCountEl.textContent = "";
+    userListDiv.innerHTML = "";
   }
 });
 
@@ -161,3 +185,23 @@ voteBtn.addEventListener("click", async () => {
     alert("Eipäs nyt enempää painella! Saatanan kusipää!");
   }
 });
+
+import { collection, getDocs } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore.js";
+
+// Käyttäjälistan näyttäminen
+async function showUserList() {
+  const userListEl = document.getElementById("user-list");
+  const usersCol = collection(db, "users");
+  const snapshot = await getDocs(usersCol);
+
+  let html = "<ul>";
+  snapshot.forEach(doc => {
+    const data = doc.data();
+    if (data.username) {
+      html += `<li>${data.username}</li>`;
+    }
+  });
+  html += "</ul>";
+
+  userListEl.innerHTML = html;
+}

@@ -151,7 +151,7 @@ onAuthStateChanged(auth, async user => {
     }
 
     // Päivitä lista DOM:iin
-    userListDiv.innerHTML = "<h3>Käyttäjien nimet, jotka ovat painaneet nappia:</h3><ul>" +
+    userListDiv.innerHTML = "<h3>Käyttäjien käyttäjänimet, jotka ovat painaneet nappia:</h3><ul>" +
       usernames.map(name => `<li>${name}</li>`).join("") +
       "</ul>";
 

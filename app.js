@@ -109,7 +109,7 @@ voteBtn.addEventListener("click", async () => {
   if (!hasVoted) {
     await updateDoc(docRef, {
       count: increment(1),
-      users: [...data.users, user.uid]
+      users: [...data.users, { user.uid, email: user.email } ]
     });
 
     voteCountEl.textContent = data.count + 1;

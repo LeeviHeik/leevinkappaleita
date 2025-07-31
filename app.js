@@ -104,12 +104,12 @@ voteBtn.addEventListener("click", async () => {
   const docRef = doc(db, "votes", "main");
   const docSnap = await getDoc(docRef);
   const data = docSnap.data();
-  const hasVoted = data.users.includes(user.uid);
+  const hasVoted = data.users.some(u => u.uid === user.uid);
 
   if (!hasVoted) {
     await updateDoc(docRef, {
       count: increment(1),
-      users: [...data.users, { user.uid, email: user.email } ]
+      users: [...data.users, { uid: user.uid, email: user.email } ]
     });
 
     voteCountEl.textContent = data.count + 1;
